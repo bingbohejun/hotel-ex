@@ -1,0 +1,16 @@
+# 构建产物
+build/
+.gradle/
+
+# 专有依赖 jar（本体与 ldlib2 —— 不可再分发，克隆者需自行放入）
+libs/*.jar
+
+# 运行时与日志
+run/
+logs/
+*.log
+
+# IDE
+.idea/
+*.iml
+.vscode/

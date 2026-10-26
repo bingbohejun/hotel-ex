@@ -1,0 +1,10 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        maven {
+            url = 'https://bmclapi2.bangbang93.com/maven'
+        }
+    }
+}
+
+rootProject.name = 'wss-hotel-addon'

@@ -1,0 +1,21 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "0": "wss_hotel:block/room_sign_dirty",
+    "particle": "wss_hotel:block/room_sign_dirty"
+  },
+  "elements": [
+    {
+      "from": [2, 4, 0],
+      "to": [14, 12, 2],
+      "faces": {
+        "north": { "texture": "#0", "uv": [2, 4, 14, 12] },
+        "south": { "texture": "#0", "uv": [2, 4, 14, 12] },
+        "east":  { "texture": "#0", "uv": [0, 4, 2, 12] },
+        "west":  { "texture": "#0", "uv": [0, 4, 2, 12] },
+        "up":    { "texture": "#0", "uv": [2, 0, 14, 2] },
+        "down":  { "texture": "#0", "uv": [2, 0, 14, 2] }
+      }
+    }
+  ]
+}

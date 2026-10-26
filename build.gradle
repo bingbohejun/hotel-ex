@@ -1,0 +1,38 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.147'
+}
+
+version = '1.6.2'
+group = 'wsshotel'
+base { archivesName = 'wss-hotel-addon' }
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+neoForge {
+    version = '21.1.251'
+}
+
+repositories {
+    // 国内镜像：NeoForge 官方 maven 的镜像（备用，主通道走代理访问官方源）
+    maven {
+        url = 'https://bmclapi2.bangbang93.com/maven'
+    }
+    mavenCentral()
+}
+
+dependencies {
+    // 本体 Mod（编译依赖，不是运行时模组）
+    compileOnly fileTree(dir: 'libs', include: ['*-dev-api.jar', 'wonder_shop_story_core-*.jar', 'ldlib2-*.jar'])
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'WSS Hotel Addon',
+                   'Implementation-Version': project.version
+    }
+}

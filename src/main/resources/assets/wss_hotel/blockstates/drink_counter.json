@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "wss_hotel:block/drink_counter" }
+  }
+}

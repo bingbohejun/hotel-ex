@@ -1,0 +1,37 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+license = "AGPL-3.0"
+
+# Mixin：经核心作者许可，用于接入包级私有的员工生命周期/到店打点/经营计划接口
+[[mixins]]
+config = "wss_hotel.mixins.json"
+
+[[mods]]
+modId = "wss_hotel"
+version = "1.6.2"
+displayName = "奇妙商店物语 · 小旅馆附属"
+authors = "wsshotel"
+description = '''
+为《奇妙商店物语》新增“小旅馆”店型：入住登记、客房管理、按时长计费、退房结算、客房保洁与收益台账。
+'''
+
+[[dependencies.wss_hotel]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21.1.0,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.wss_hotel]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21.1,1.22)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.wss_hotel]]
+modId = "wonder_shop_story_core"
+type = "required"
+versionRange = "[1.6.7,1.6.8)"
+ordering = "AFTER"
+side = "BOTH"

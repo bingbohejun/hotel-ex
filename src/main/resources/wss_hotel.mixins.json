@@ -1,0 +1,19 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "wsshotel.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "BusinessPlanServiceAccess",
+    "CityResidentsAccess",
+    "RestaurantServiceAccess",
+    "RetailPacketsMixin",
+    "WorkstationHealthMixin",
+    "RetailShelvingMixin",
+    "ShopStaffLifecycleAccess",
+    "ShopStaffLifeAccess"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

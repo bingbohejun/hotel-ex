@@ -1,0 +1,11 @@
+{
+  "itemGroup.wss_hotel": "WSS Hotel Addon",
+  "gui.wss_hotel.ledger.title": "Hotel Ledger",
+  "gui.wss_hotel.ledger.pricing": "Pricing",
+  "gui.wss_hotel.ledger.refresh": "Refresh",
+  "gui.wss_hotel.ledger.back": "Back",
+  "gui.wss_hotel.ledger.save": "Save",
+  "block.wss_hotel.room_sign": "Room Sign",
+  "block.wss_hotel.drink_counter": "Lobby Drink Counter",
+  "item.wss_hotel.room_card": "Room Card"
+}

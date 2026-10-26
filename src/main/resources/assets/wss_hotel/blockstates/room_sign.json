@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north,room_state=free":      { "model": "wss_hotel:block/room_sign_free", "y": 0 },
+    "facing=north,room_state=occupied":  { "model": "wss_hotel:block/room_sign_occupied", "y": 0 },
+    "facing=north,room_state=dirty":     { "model": "wss_hotel:block/room_sign_dirty", "y": 0 },
+    "facing=north,room_state=cleaning":  { "model": "wss_hotel:block/room_sign_cleaning", "y": 0 },
+    "facing=east,room_state=free":       { "model": "wss_hotel:block/room_sign_free", "y": 90 },
+    "facing=east,room_state=occupied":   { "model": "wss_hotel:block/room_sign_occupied", "y": 90 },
+    "facing=east,room_state=dirty":      { "model": "wss_hotel:block/room_sign_dirty", "y": 90 },
+    "facing=east,room_state=cleaning":   { "model": "wss_hotel:block/room_sign_cleaning", "y": 90 },
+    "facing=south,room_state=free":      { "model": "wss_hotel:block/room_sign_free", "y": 180 },
+    "facing=south,room_state=occupied":  { "model": "wss_hotel:block/room_sign_occupied", "y": 180 },
+    "facing=south,room_state=dirty":     { "model": "wss_hotel:block/room_sign_dirty", "y": 180 },
+    "facing=south,room_state=cleaning":  { "model": "wss_hotel:block/room_sign_cleaning", "y": 180 },
+    "facing=west,room_state=free":       { "model": "wss_hotel:block/room_sign_free", "y": 270 },
+    "facing=west,room_state=occupied":   { "model": "wss_hotel:block/room_sign_occupied", "y": 270 },
+    "facing=west,room_state=dirty":      { "model": "wss_hotel:block/room_sign_dirty", "y": 270 },
+    "facing=west,room_state=cleaning":   { "model": "wss_hotel:block/room_sign_cleaning", "y": 270 }
+  }
+}
