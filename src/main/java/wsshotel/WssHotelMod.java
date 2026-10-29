@@ -180,7 +180,12 @@ public final class WssHotelMod {
         // 由 HotelSetup.furniture() 白名单放进“工作”页，零售玩法见 HotelBusiness.retail。
     }
 
-    /** P2-C：附属特殊房客。requires 仅 CUSTOMER_PAYMENTS，允许进入小旅馆。 */
+    /**
+     * P2-C：附属特殊房客。requires 仅 CUSTOMER_PAYMENTS（本体按此判断店型是否接纳），
+     * 条件里再显式限定 kind == 小旅馆——否则本体的 recurringVisits 会把他们派到任何支持
+     * CUSTOMER_PAYMENTS 的店（便利店、餐厅…），而附属的答谢监听器只对小旅馆生效，
+     * 结果是在别的店里满意后空手而归。
+     */
     private static void registerCustomers(RegisterWssContentEvent event) {
         ResourceLocation salesman = id("salesman_lao_zhou");
         event.customer(salesman, new org.merlin204.wss.api.AddonCustomer(
@@ -194,7 +199,7 @@ public final class WssHotelMod {
                         "临走时留下了两床新被褥作为谢礼。",
                         "他觉得这里还比不上他见过的那些客栈。"),
                 Set.of(ShopCapability.CUSTOMER_PAYMENTS),
-                context -> true,
+                context -> context.shop().kind == HotelShopType.kind(),
                 "any"));
 
         ResourceLocation writer = id("writer_lin");
@@ -209,7 +214,8 @@ public final class WssHotelMod {
                         "她在专栏里写下了这家旅馆的好评。",
                         "她合上笔记本，摇头离开了。"),
                 Set.of(ShopCapability.CUSTOMER_PAYMENTS),
-                context -> WssHotelMod.attachment(context.shop()).hasDeluxe,
+                context -> context.shop().kind == HotelShopType.kind()
+                        && WssHotelMod.attachment(context.shop()).hasDeluxe,
                 "afternoon"));
     }
 

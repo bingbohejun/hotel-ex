@@ -146,7 +146,8 @@ public final class HotelPackets {
     private static final int MAX_DISH_CHOICES = 40;
 
     public static void register(RegisterPayloadHandlersEvent event) {
-        PayloadRegistrar registrar = event.registrar("2");
+        // optional：两端附属版本短暂不一致时不再踢人（缺失通道的功能静默降级）。
+        PayloadRegistrar registrar = event.registrar("2").optional();
         registrar.playToServer(LedgerRequest.TYPE, LedgerRequest.CODEC, (payload, context) ->
                 context.enqueueWork(() -> handleRequest(context.player() instanceof ServerPlayer player ? player : null, payload)));
         registrar.playToServer(ChainRequest.TYPE, ChainRequest.CODEC, (payload, context) ->
@@ -159,10 +160,13 @@ public final class HotelPackets {
                 context.enqueueWork(() -> handleDrinkPrice(context.player() instanceof ServerPlayer player ? player : null, payload)));
         registrar.playToServer(UpgradeRoom.TYPE, UpgradeRoom.CODEC, (payload, context) ->
                 context.enqueueWork(() -> handleUpgrade(context.player() instanceof ServerPlayer player ? player : null, payload)));
-        if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) {
-            registrar.playToClient(LedgerReply.TYPE, LedgerReply.CODEC,
-                    (payload, context) -> context.enqueueWork(() -> wsshotel.client.HotelClientUi.receive(payload.json())));
-        }
+        // 注意：S2C 通道必须“两端都注册”。以前这里套了一层 FMLEnvironment.dist.isClient()，
+        // 专用服务端就完全没有 wss_hotel:ledger_reply 这条通道，客户端握手时会判定
+        // “服务端缺少此客户端需要的网络通道”并直接踢人（单机/局域网因为物理端就是客户端，所以一直没暴露）。
+        // 这里无条件注册，处理器只会在客户端真正收到包时才执行，服务端注册的只是一条空声明，
+        // 不会加载 HotelClientUi。
+        registrar.playToClient(LedgerReply.TYPE, LedgerReply.CODEC,
+                (payload, context) -> context.enqueueWork(() -> wsshotel.client.HotelClientUi.receive(payload.json())));
     }
 
     private static boolean managed(ServerPlayer player, String shopId) {

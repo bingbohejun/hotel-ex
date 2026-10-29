@@ -8,7 +8,7 @@ config = "wss_hotel.mixins.json"
 
 [[mods]]
 modId = "wss_hotel"
-version = "1.6.2"
+version = "1.6.6"
 displayName = "奇妙商店物语 · 小旅馆附属"
 authors = "wsshotel"
 description = '''

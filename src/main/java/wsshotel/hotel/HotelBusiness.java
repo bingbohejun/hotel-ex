@@ -603,21 +603,18 @@ public final class HotelBusiness extends AbstractShopBusiness {
     /** 服务员任务推进（送货/补货状态机）。 */
     private void runWaiterTasks(ShopWorkContext context, HotelState hotel, RetailState retail) {
         ServerLevel level = context.level();
-        java.util.Iterator<HotelState.WaiterTask> it = hotel.tasks.iterator();
-        while (it.hasNext()) {
-            HotelState.WaiterTask t = it.next();
-            if (t.waiter == null) {
-                continue;
-            }
+        // 遍历拷贝：循环体内 enqueueRestock 会向 hotel.tasks 添加元素，
+        // 活迭代器会抛 ConcurrentModificationException（曾致内置服务器崩溃）。
+        for (HotelState.WaiterTask t : new ArrayList<>(hotel.tasks)) {
             EmployeeEntity waiter = entityOf(level, java.util.UUID.fromString(t.waiter));
             if (waiter == null) {
                 t.waiter = null;
                 continue;
             }
             switch (t.type == null ? "" : t.type) {
-                case "DELIVER" -> runDeliver(context, hotel, retail, t, waiter, it);
-                case "RESTOCK" -> runRestock(context, hotel, retail, t, waiter, it);
-                default -> it.remove();
+                case "DELIVER" -> runDeliver(context, hotel, retail, t, waiter, hotel.tasks);
+                case "RESTOCK" -> runRestock(context, hotel, retail, t, waiter, hotel.tasks);
+                default -> hotel.tasks.remove(t);
             }
         }
     }
@@ -668,11 +665,11 @@ public final class HotelBusiness extends AbstractShopBusiness {
 
     /** 送货：从货架层取货 → 送到房客手中（房客即时支付，服务员手提商品）。 */
     private void runDeliver(ShopWorkContext context, HotelState hotel, RetailState retail, HotelState.WaiterTask t,
-                            EmployeeEntity waiter, java.util.Iterator<HotelState.WaiterTask> it) {
+                            EmployeeEntity waiter, java.util.List<HotelState.WaiterTask> tasks) {
         HotelState.Demand d = hotel.demands.stream().filter(x -> x.orderId.equals(t.orderId)).findFirst().orElse(null);
         if (d == null) {
             waiter.retailVisual(0, java.util.List.of());
-            it.remove();
+            tasks.remove(t);
             return;
         }
         ServerLevel level = context.level();
@@ -716,7 +713,7 @@ public final class HotelBusiness extends AbstractShopBusiness {
             EmployeeEntity guest = entityOf(level, java.util.UUID.fromString(t.customer));
             if (guest == null) {
                 waiter.retailVisual(0, java.util.List.of());
-                it.remove();
+                tasks.remove(t);
                 hotel.demands.removeIf(x -> x.orderId.equals(t.orderId));
                 RestaurantData.get(context.server()).setDirty();
                 return;
@@ -738,18 +735,18 @@ public final class HotelBusiness extends AbstractShopBusiness {
             guest.express(NpcEmotion.LOVE);
             ShopStaff.status(guest, "收到 " + HotelGoods.name(t.goods));
             hotel.demands.removeIf(x -> x.orderId.equals(t.orderId));
-            it.remove();
+            tasks.remove(t);
             RestaurantData.get(context.server()).setDirty();
         }
     }
 
     /** 补货：走到货架旁（免费补满各层，对齐便利店“补货员免费补满卖空的货架”）。 */
     private void runRestock(ShopWorkContext context, HotelState hotel, RetailState retail, HotelState.WaiterTask t,
-                            EmployeeEntity waiter, java.util.Iterator<HotelState.WaiterTask> it) {
+                            EmployeeEntity waiter, java.util.List<HotelState.WaiterTask> tasks) {
         RetailState.Shelf s = retail.shelves.get(Long.parseLong(t.shelf));
         if (s == null) {
             waiter.retailVisual(0, java.util.List.of());
-            it.remove();
+            tasks.remove(t);
             return;
         }
         if (t.phase == 0) {
@@ -776,7 +773,7 @@ public final class HotelBusiness extends AbstractShopBusiness {
             }
             pushDisplay(hotel, level, shelf, s);
             waiter.retailVisual(0, java.util.List.of());
-            it.remove();
+            tasks.remove(t);
             RestaurantData.get(context.server()).setDirty();
         }
     }
@@ -995,11 +992,11 @@ public final class HotelBusiness extends AbstractShopBusiness {
             timeout(context, hotel, order, guest, WALK_TIMEOUT);
             return;
         }
-        EmployeeEntity receptionist = workerNear(context, ShopJob.CASHIER, register.block(), 8);
+        EmployeeEntity receptionist = receptionistNear(context, register); // 半径 32 格，确保能找到远处的收银员
         if (receptionist == null) {
-            ShopStaff.status(guest, "等待前台接待");
-            walkWorker(receptionistNear(context, register), register.worker());
-            timeout(context, hotel, order, guest, WALK_TIMEOUT * 4);
+            // 找不到收银员：快速失败，避免顾客长时间堆积在收银台。
+            ShopStaff.status(guest, "前台无人接待（收银员未上岗或太远）");
+            cancel(context, hotel, order, guest, "收银员未在岗");
             return;
         }
         walkWorker(receptionist, register.worker());
@@ -1312,10 +1309,12 @@ public final class HotelBusiness extends AbstractShopBusiness {
             timeout(context, hotel, order, guest, WALK_TIMEOUT);
             return;
         }
-        EmployeeEntity receptionist = workerNear(context, ShopJob.CASHIER, register.block(), 8);
+        EmployeeEntity receptionist = receptionistNear(context, register); // 半径 32 格，确保能找到远处的收银员
         if (receptionist == null) {
-            ShopStaff.status(guest, "等待前台退房");
-            timeout(context, hotel, order, guest, WALK_TIMEOUT * 4);
+            // 找不到收银员：按已住时长直接结算并离开，避免房客被卡死。
+            ShopStaff.status(guest, "前台无人接待（收银员未上岗或太远）");
+            settle(context, hotel, order, guest, null);
+            depart(context, hotel, order, guest, false, true);
             return;
         }
         walkWorker(receptionist, register.worker());

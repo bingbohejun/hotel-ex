@@ -11,7 +11,8 @@
     "WorkstationHealthMixin",
     "RetailShelvingMixin",
     "ShopStaffLifecycleAccess",
-    "ShopStaffLifeAccess"
+    "ShopStaffLifeAccess",
+    "SpecialCustomerRewardMixin"
   ],
   "injectors": {
     "defaultRequire": 1
