@@ -1685,16 +1685,31 @@ public final class HotelBusiness extends AbstractShopBusiness {
 
     // —— P0-C：空闲员工回待命位（前台→收银工位，保洁→首个客房门口） ——
 
+    /**
+     * 空闲处理：优先本体休息机制（精力 < 65 时寻找带“员工休息”功能的家具就座恢复，
+     * 选座/寻路/起身状态机在本体 FurnitureScenes 内）；无休息家具或精力充足时回退到
+     * 固定待命位（前台接待 → 收银工位，客房保洁 → 首间客房门口）。
+     */
     private void standby(ShopWorkContext context, HotelState hotel, HotelRooms rooms) {
         if (cycle % 200 != 0) {
             return;
         }
+        ServerLevel level = context.level();
         ShopFacilities.Station register = registerOf(context);
         BlockPos desk = register != null ? register.worker() : null;
         BlockPos maidSpot = rooms.rooms().isEmpty() ? null : rooms.rooms().get(0).approach();
         for (EmploymentData.Worker worker : context.workers()) {
-            EmployeeEntity npc = entityOf(context.level(), worker.profile().id());
-            if (npc == null || npc.getPose() == Pose.SLEEPING || hotel.cleans.containsKey(worker.profile().id().toString())) {
+            String workerId = worker.profile().id().toString();
+            EmployeeEntity npc = entityOf(level, worker.profile().id());
+            if (npc == null || npc.getPose() == Pose.SLEEPING || npc.isPassenger()
+                    || hotel.cleans.containsKey(workerId)
+                    || hotel.serviceJobs.values().stream().anyMatch(j -> workerId.equals(j.worker))
+                    || hotel.tasks.stream().anyMatch(t -> workerId.equals(t.waiter))) {
+                continue;
+            }
+            // 休息机制：本体在岗员工空闲时按精力自动寻找“员工休息”家具就座。
+            if (ShopStaffLifeAccess.invokeIdleAvailable(context.state(), worker.profile().id())
+                    && ShopStaffLifeAccess.invokeIdleRest(level, context.shop(), context.state(), npc)) {
                 continue;
             }
             BlockPos anchor = null;
