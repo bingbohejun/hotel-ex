@@ -160,8 +160,7 @@ public final class HotelRooms {
             net.minecraft.resources.ResourceLocation key = BuiltInRegistries.BLOCK.getKey(state.getBlock());
             String path = key.getPath();
             if ("wss_hotel".equals(key.getNamespace()) && path.equals("drink_machine")) {
-                // 自家饮料机仅下格计入（中、上格由放置逻辑生成）。
-                return !state.hasProperty(DrinkMachineBlock.HALF) || state.getValue(DrinkMachineBlock.HALF) == DrinkMachineBlock.Half.LOWER;
+                return true;
             }
             if (!"yuushya".equals(key.getNamespace())) {
                 return false;
