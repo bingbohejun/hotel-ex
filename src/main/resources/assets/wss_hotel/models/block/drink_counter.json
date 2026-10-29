@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/cube_bottom_top",
-  "textures": {
-    "top": "wss_hotel:block/drink_counter_top",
-    "bottom": "minecraft:block/oak_planks",
-    "side": "wss_hotel:block/drink_counter"
-  }
-}

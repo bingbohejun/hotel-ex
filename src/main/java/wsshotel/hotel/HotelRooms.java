@@ -114,7 +114,7 @@ public final class HotelRooms {
                 return;
             }
             // F2：饮品台（附属自有方块）。
-            if (state.getBlock() == wsshotel.HotelBlocks.DRINK_COUNTER.get() && counterSeen.add(pos.asLong())) {
+            if (isDrinkCounter(state) && counterSeen.add(pos.asLong())) {
                 counters.add(pos.immutable());
                 return;
             }
@@ -153,6 +153,25 @@ public final class HotelRooms {
                 }
             }
             return new HotelRooms(out, seatSpots, counterSpots);
+        }
+
+        /** F2 饮品台识别：yuushya 立式贩卖机（pos=middle 挂实体模型，视觉约 3 格高）。 */
+        private static boolean isDrinkCounter(BlockState state) {
+            net.minecraft.resources.ResourceLocation key = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+            if (!"yuushya".equals(key.getNamespace())) {
+                return false;
+            }
+            String path = key.getPath();
+            if (!path.startsWith("vending_machine_") && !path.equals("cold_juice_dispenser")) {
+                return false;
+            }
+            // 仅收集挂实体模型的 middle 格，避免 bottom/top/none 占位格重复。
+            for (net.minecraft.world.level.block.state.properties.Property<?> prop : state.getProperties()) {
+                if (prop.getName().equals("pos")) {
+                    return "middle".equals(String.valueOf(state.getValue(prop)));
+                }
+            }
+            return true;
         }
 
         /** 候位椅识别：配置列表优先，否则自动识别 ID 含 chair 的方块。 */

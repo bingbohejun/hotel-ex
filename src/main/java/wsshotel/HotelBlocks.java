@@ -15,7 +15,6 @@ import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
-import wsshotel.hotel.DrinkCounterBlock;
 import wsshotel.hotel.RoomSignBlock;
 
 /**
@@ -45,16 +44,6 @@ public final class HotelBlocks {
     public static final DeferredItem<Item> ROOM_CARD = ITEMS.register("room_card",
             () -> new Item(new Item.Properties().stacksTo(16)));
 
-    /** F2 大堂饮品台：房客退房前顺路购买饮品的柜台。 */
-    public static final DeferredBlock<Block> DRINK_COUNTER =
-            BLOCKS.registerBlock("drink_counter", DrinkCounterBlock::new,
-                    BlockBehaviour.Properties.of()
-                            .mapColor(MapColor.COLOR_BROWN)
-                            .strength(1.5f)
-                            .sound(SoundType.WOOD));
-
-    public static final DeferredItem<BlockItem> DRINK_COUNTER_ITEM =
-            ITEMS.registerSimpleBlockItem("drink_counter", DRINK_COUNTER);
 
     /** “旅馆扩展”创造模式标签页。 */
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> HOTEL_TAB = TABS.register("hotel_tab",
@@ -64,7 +53,6 @@ public final class HotelBlocks {
                     .displayItems((parameters, output) -> {
                         output.accept(ROOM_SIGN_ITEM.get());
                         output.accept(ROOM_CARD.get());
-                        output.accept(DRINK_COUNTER_ITEM.get());
                     })
                     .build());
 
