@@ -606,6 +606,10 @@ public final class HotelBusiness extends AbstractShopBusiness {
         // 遍历拷贝：循环体内 enqueueRestock 会向 hotel.tasks 添加元素，
         // 活迭代器会抛 ConcurrentModificationException（曾致内置服务器崩溃）。
         for (HotelState.WaiterTask t : new ArrayList<>(hotel.tasks)) {
+            // 未派单（waiter 为 null）的任务跳过——UUID.fromString 不接受 null。
+            if (t.waiter == null || t.waiter.isEmpty()) {
+                continue;
+            }
             EmployeeEntity waiter = entityOf(level, java.util.UUID.fromString(t.waiter));
             if (waiter == null) {
                 t.waiter = null;
