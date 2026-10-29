@@ -126,6 +126,13 @@ public final class WssHotelMod {
                 org.merlin204.wss.shop.ShopKind.RESTAURANT, HotelShopType::definition));
 
         registerBedFurniture(event);
+        // F2 旅馆饮料机：注册为"工作"类家具（仅旅馆店型可购），描述显示在家具市场。
+        event.furniture(WssHotelMod.id("drink_machine"), org.merlin204.wss.shop.FurnitureCatalog.entry(
+                "旅馆饮料机", "work", 2, 3, 2, 350,
+                "wss_hotel:drink_machine",
+                "大堂的立式饮料机。房客退房前会顺路购买饮品。",
+                "", java.util.Map.of(), "inside"),
+                java.util.Set.of(HotelShopType.kind()));
         registerCustomers(event);
         registerDialogue(event);
 

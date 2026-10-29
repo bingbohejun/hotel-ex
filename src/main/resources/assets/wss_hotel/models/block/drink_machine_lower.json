@@ -1,0 +1,21 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "0": "yuushya:0extra_building_material/preview/vending2",
+    "particle": "yuushya:0extra_building_material/preview/vending2"
+  },
+  "elements": [
+    {
+      "from": [1, 0, 2],
+      "to": [15, 16, 14],
+      "faces": {
+        "north": { "texture": "#0", "uv": [0, 0, 16, 43] },
+        "south": { "texture": "#0", "uv": [0, 0, 16, 43] },
+        "east":  { "texture": "#0", "uv": [0, 0, 5, 43] },
+        "west":  { "texture": "#0", "uv": [11, 0, 16, 43] },
+        "up":    { "texture": "#0", "uv": [0, 0, 16, 16] },
+        "down":  { "texture": "#0", "uv": [0, 0, 16, 16] }
+      }
+    }
+  ]
+}

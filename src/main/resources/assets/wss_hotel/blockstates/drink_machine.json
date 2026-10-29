@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "facing=north,half=lower":  { "model": "wss_hotel:block/drink_machine_lower", "y": 180 },
+    "facing=north,half=middle": { "model": "wss_hotel:block/drink_machine_middle", "y": 180 },
+    "facing=north,half=upper":  { "model": "wss_hotel:block/drink_machine_upper", "y": 180 },
+    "facing=south,half=lower":  { "model": "wss_hotel:block/drink_machine_lower" },
+    "facing=south,half=middle": { "model": "wss_hotel:block/drink_machine_middle" },
+    "facing=south,half=upper":  { "model": "wss_hotel:block/drink_machine_upper" },
+    "facing=west,half=lower":   { "model": "wss_hotel:block/drink_machine_lower", "y": 90 },
+    "facing=west,half=middle":  { "model": "wss_hotel:block/drink_machine_middle", "y": 90 },
+    "facing=west,half=upper":   { "model": "wss_hotel:block/drink_machine_upper", "y": 90 },
+    "facing=east,half=lower":   { "model": "wss_hotel:block/drink_machine_lower", "y": 270 },
+    "facing=east,half=middle":  { "model": "wss_hotel:block/drink_machine_middle", "y": 270 },
+    "facing=east,half=upper":   { "model": "wss_hotel:block/drink_machine_upper", "y": 270 }
+  }
+}

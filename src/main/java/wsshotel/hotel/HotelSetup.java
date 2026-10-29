@@ -220,7 +220,8 @@ public final class HotelSetup implements ShopSetup {
         // 自家物件（床对应的原版床方块在 BED_BLOCKS 配置里）一律放行；
         // 货架用本体便利店货架（与便利店同款，类别 work）。
         if (id != null && (HotelConfig.BED_BLOCKS.get().contains(id)
-                || id.equals("wonder_shop_story_core:retail_shelf"))) {
+                || id.equals("wonder_shop_story_core:retail_shelf")
+                || id.equals("wss_hotel:drink_machine"))) {
             return true;
         }
         String category = entry.category();

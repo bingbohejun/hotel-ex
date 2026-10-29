@@ -155,13 +155,17 @@ public final class HotelRooms {
             return new HotelRooms(out, seatSpots, counterSpots);
         }
 
-        /** F2 饮品台识别：yuushya 立式贩卖机（pos=middle 挂实体模型，视觉约 3 格高）。 */
+        /** F2 饮品台识别：yuushya 立式贩卖机（pos=middle 挂实体模型）与自家旅馆饮料机（仅下格）。 */
         private static boolean isDrinkCounter(BlockState state) {
             net.minecraft.resources.ResourceLocation key = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+            String path = key.getPath();
+            if ("wss_hotel".equals(key.getNamespace()) && path.equals("drink_machine")) {
+                // 自家饮料机仅下格计入（中、上格由放置逻辑生成）。
+                return !state.hasProperty(DrinkMachineBlock.HALF) || state.getValue(DrinkMachineBlock.HALF) == DrinkMachineBlock.Half.LOWER;
+            }
             if (!"yuushya".equals(key.getNamespace())) {
                 return false;
             }
-            String path = key.getPath();
             if (!path.startsWith("vending_machine_") && !path.equals("cold_juice_dispenser")) {
                 return false;
             }

@@ -6,5 +6,6 @@
   "gui.wss_hotel.ledger.back": "Back",
   "gui.wss_hotel.ledger.save": "Save",
   "block.wss_hotel.room_sign": "Room Sign",
+  "block.wss_hotel.drink_machine": "Hotel Drink Machine",
   "item.wss_hotel.room_card": "Room Card"
 }

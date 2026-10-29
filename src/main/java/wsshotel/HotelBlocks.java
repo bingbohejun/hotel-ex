@@ -15,6 +15,7 @@ import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import wsshotel.hotel.DrinkMachineBlock;
 import wsshotel.hotel.RoomSignBlock;
 
 /**
@@ -44,6 +45,18 @@ public final class HotelBlocks {
     public static final DeferredItem<Item> ROOM_CARD = ITEMS.register("room_card",
             () -> new Item(new Item.Properties().stacksTo(16)));
 
+    /** F2 旅馆饮料机：立式三连方块，工作页购买（仅旅馆店型）。 */
+    public static final DeferredBlock<DrinkMachineBlock> DRINK_MACHINE =
+            BLOCKS.registerBlock("drink_machine", wsshotel.hotel.DrinkMachineBlock::new,
+                    BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.COLOR_RED)
+                            .strength(1.2f)
+                            .sound(SoundType.METAL)
+                            .noOcclusion());
+
+    public static final DeferredItem<BlockItem> DRINK_MACHINE_ITEM =
+            ITEMS.registerSimpleBlockItem("drink_machine", DRINK_MACHINE);
+
 
     /** “旅馆扩展”创造模式标签页。 */
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> HOTEL_TAB = TABS.register("hotel_tab",
@@ -52,6 +65,7 @@ public final class HotelBlocks {
                     .icon(() -> new ItemStack(ROOM_CARD.get()))
                     .displayItems((parameters, output) -> {
                         output.accept(ROOM_SIGN_ITEM.get());
+                        output.accept(DRINK_MACHINE_ITEM.get());
                         output.accept(ROOM_CARD.get());
                     })
                     .build());

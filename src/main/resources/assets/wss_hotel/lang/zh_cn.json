@@ -1,10 +1,11 @@
 {
-  "itemGroup.wss_hotel": "小旅馆附属",
+  "itemGroup.wss_hotel": "旅馆扩展",
   "gui.wss_hotel.ledger.title": "客房台账",
   "gui.wss_hotel.ledger.pricing": "价目",
   "gui.wss_hotel.ledger.refresh": "刷新",
   "gui.wss_hotel.ledger.back": "返回",
   "gui.wss_hotel.ledger.save": "保存",
   "block.wss_hotel.room_sign": "客房门牌",
+  "block.wss_hotel.drink_machine": "旅馆饮料机",
   "item.wss_hotel.room_card": "房卡"
 }
