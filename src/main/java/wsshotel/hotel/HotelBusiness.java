@@ -72,6 +72,10 @@ public final class HotelBusiness extends AbstractShopBusiness {
     private int cycle;
     private static final int WALK_TIMEOUT = 1500;
     private static final int LEAVE_TIMEOUT = 3000;
+    /** 前台占用者超过该周期数仍未走到站位（1 周期 ≙ 5 刻 ≈ 50 秒）：让位轮换，防止一人堵死前台。 */
+    private static final int DESK_CLAIM_PATIENCE = 200;
+    /** 排队等候前台的最大周期数（≈ 2.5 分钟），超时按"等候太久"离店。 */
+    private static final int DESK_WAIT_LIMIT = 600;
     private static final String[] TIER_NAMES = {"标准", "舒适", "豪华"};
 
     private HotelBusiness() {
@@ -983,6 +987,76 @@ public final class HotelBusiness extends AbstractShopBusiness {
         return null;
     }
 
+    // —— 前台服务位互斥（防拥堵） ——
+
+    /**
+     * 收银台前站位只有一格：同一时刻只放一名客人走向/使用前台，其余客人在候位椅排队。
+     * 占用者超过 DESK_CLAIM_PATIENCE 仍未走到站位（路径被堵）则让位轮换，防止一人锁死前台。
+     */
+    private boolean claimDesk(ShopWorkContext context, HotelState hotel, RestaurantData.Order order) {
+        String key = order.id.toString();
+        if (key.equals(hotel.deskUser)) {
+            if (!hotel.deskArrived && order.age - hotel.deskClaimedAt > DESK_CLAIM_PATIENCE) {
+                hotel.deskUser = null;
+            } else {
+                return true;
+            }
+        }
+        if (hotel.deskUser != null
+                && context.state().orders.stream().noneMatch(o -> o.id.toString().equals(hotel.deskUser))) {
+            hotel.deskUser = null;
+        }
+        if (hotel.deskUser == null) {
+            hotel.deskUser = key;
+            hotel.deskClaimedAt = order.age;
+            hotel.deskArrived = false;
+            hotel.deskWaitSince.remove(key);
+            return true;
+        }
+        return false;
+    }
+
+    private void releaseDesk(HotelState hotel, RestaurantData.Order order) {
+        if (order != null && order.id.toString().equals(hotel.deskUser)) {
+            hotel.deskUser = null;
+            hotel.deskArrived = false;
+        }
+        if (order != null) {
+            hotel.deskWaitSince.remove(order.id.toString());
+        }
+    }
+
+    /**
+     * 前台互斥下未轮到的客人：去候位椅排队等候叫号，不挤在收银台。
+     * 排队超时按"等候太久"离店——时长从首次排队开始计（退房订单 age 很大，不能用绝对 age 比较）。
+     */
+    private void waitAside(ShopWorkContext context, HotelState hotel, RestaurantData.Order order, EmployeeEntity guest) {
+        String key = order.id.toString();
+        long since = hotel.deskWaitSince.computeIfAbsent(key, k -> (long) order.age);
+        if (order.age - since > DESK_WAIT_LIMIT) {
+            cancel(context, hotel, order, guest, "排队太久，改去别家");
+            return;
+        }
+        HotelRooms rooms = context.facilities().extension(HotelRooms.class, HotelCrowdPolicy.EMPTY);
+        Long seat = hotel.waitingSeats.get(key);
+        if (seat == null) {
+            seat = freeChair(hotel, rooms);
+            if (seat != null) {
+                hotel.waitingSeats.put(key, seat);
+            }
+        }
+        if (seat != null) {
+            BlockPos spot = BlockPos.of(seat);
+            if (near(guest, spot)) {
+                ShopStaff.status(guest, "在前台排队等候");
+            } else {
+                walk(guest, spot, "前往候位椅排队", order);
+            }
+        } else {
+            ShopStaff.status(guest, "排队等候前台");
+        }
+    }
+
     // —— 前台登记 ——
 
     private void registering(ShopWorkContext context, HotelState hotel, HotelRooms rooms, RestaurantData.Order order, EmployeeEntity guest) {
@@ -991,11 +1065,17 @@ public final class HotelBusiness extends AbstractShopBusiness {
             cancel(context, hotel, order, guest, "前台收银台被拆除");
             return;
         }
+        // 前台服务位互斥：站位只有一格，其余客人去候位椅排队，避免全员拥堵在收银台。
+        if (!claimDesk(context, hotel, order)) {
+            waitAside(context, hotel, order, guest);
+            return;
+        }
         BlockPos front = register.customer() != null ? register.customer() : register.block();
         if (!walk(guest, front, "前往前台登记", order)) {
             timeout(context, hotel, order, guest, WALK_TIMEOUT);
             return;
         }
+        hotel.deskArrived = true;
         EmployeeEntity receptionist = receptionistNear(context, register); // 半径 32 格，确保能找到远处的收银员
         if (receptionist == null) {
             // 找不到收银员：快速失败，避免顾客长时间堆积在收银台。
@@ -1009,6 +1089,7 @@ public final class HotelBusiness extends AbstractShopBusiness {
         order.work += Math.round(5 * receptionist.workRate(2));
         if (order.work >= HotelConfig.REGISTER_WORK_TICKS.get()) {
             order.work = 0;
+            releaseDesk(hotel, order);
             receptionist.activity(EmployeeEntity.Activity.IDLE);
             guest.express(NpcEmotion.OK);
             order.ordered = true;
@@ -1308,11 +1389,17 @@ public final class HotelBusiness extends AbstractShopBusiness {
             depart(context, hotel, order, guest, false, true);
             return;
         }
+        // 前台服务位互斥：与登记共用同一个站位名额，其余房客在候位椅排队。
+        if (!claimDesk(context, hotel, order)) {
+            waitAside(context, hotel, order, guest);
+            return;
+        }
         BlockPos front = register.customer() != null ? register.customer() : register.block();
         if (!walk(guest, front, "前往前台退房", order)) {
             timeout(context, hotel, order, guest, WALK_TIMEOUT);
             return;
         }
+        hotel.deskArrived = true;
         EmployeeEntity receptionist = receptionistNear(context, register); // 半径 32 格，确保能找到远处的收银员
         if (receptionist == null) {
             // 找不到收银员：按已住时长直接结算并离开，避免房客被卡死。
@@ -1327,6 +1414,7 @@ public final class HotelBusiness extends AbstractShopBusiness {
         order.work += Math.round(5 * receptionist.workRate(2));
         if (order.work >= HotelConfig.REGISTER_WORK_TICKS.get()) {
             order.work = 0;
+            releaseDesk(hotel, order);
             receptionist.activity(EmployeeEntity.Activity.IDLE);
             settle(context, hotel, order, guest, register);
             order.stage = RestaurantData.Stage.LEAVE;
@@ -1538,6 +1626,7 @@ public final class HotelBusiness extends AbstractShopBusiness {
     /** 结束订单：释放床位与候位、归还市民、广播离店。 */
     private void depart(ShopWorkContext context, HotelState hotel, RestaurantData.Order order, EmployeeEntity guest,
                         boolean abandoned, boolean markDirty) {
+        releaseDesk(hotel, order);
         if (guest != null && stayLying(hotel, order)) {
             HotelState.Stay stay = hotel.stays.get(order.id.toString());
             endSit(guest, stay);

@@ -124,6 +124,16 @@ public class HotelState {
     /** 候位分配：订单 UUID 字符串 → 候位椅坐标（asLong 字符串）。 */
     public final Map<String, Long> waitingSeats = new LinkedHashMap<>();
 
+    // —— 前台服务位互斥（防拥堵，瞬态：重启后自然重选） ——
+    /** 当前占用收银台办理业务的订单 UUID 字符串；同一时刻只放一名客人使用前台站位。 */
+    public transient String deskUser;
+    /** 占用开始时的 order.age（仅与占用者自身的 age 比较，判断"久走不至"轮换）。 */
+    public transient long deskClaimedAt;
+    /** 占用者是否已走到前台站位。 */
+    public transient boolean deskArrived;
+    /** 前台排队开始时刻（各订单自身的 order.age），用于排队超时——退房订单 age 很大，不能用绝对值比较。 */
+    public final transient Map<String, Long> deskWaitSince = new LinkedHashMap<>();
+
     // —— P3 货物架零售 ——
     // 1.4.1 起货架配置直接存本体 RetailState（r.retail.shelves），与便利店同款备货 UI 原生打通；
     // 下面 shelves 表仅作为旧档迁移来源（migrate 后清空）。

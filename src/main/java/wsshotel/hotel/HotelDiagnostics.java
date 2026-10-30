@@ -144,6 +144,17 @@ public final class HotelDiagnostics {
                 .append(" 空房=").append(free)
                 .append(" 菜单=").append(RestaurantService.menu(shop, state, f).size())
                 .append(" 订单=").append(state.orders.size());
+        // 前台排队明细：占用者（截断显示）/占用者是否就位/排队人数——"顾客堵收银台"时看这里。
+        int deskQueue = 0;
+        for (RestaurantData.Order o : state.orders) {
+            if ((o.stage == RestaurantData.Stage.ORDERING || o.stage == RestaurantData.Stage.CHECKOUT)
+                    && !o.id.toString().equals(hotel.deskUser)) {
+                deskQueue++;
+            }
+        }
+        sb.append(" 前台占=").append(hotel.deskUser == null ? "-" : hotel.deskUser.substring(0, 8))
+                .append(" 已就位=").append(hotel.deskArrived)
+                .append(" 排队=").append(deskQueue);
 
         String miss;
         if (f.entry() == null) {
